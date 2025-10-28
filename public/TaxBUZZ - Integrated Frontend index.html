@@ -1,38 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TaxBUZZ - Tax Tracking System</title>
   <style>
+    /* Using styles mostly from the user's preferred version */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
       font-family: Arial, sans-serif;
       overflow-x: hidden;
     }
+
     .page {
       display: none;
       min-height: 100vh;
+      /* Default flex direction - ensure content stacks vertically */
+      flex-direction: column;
+      justify-content: space-between; /* Push footer down */
     }
+
     .page.active {
       display: flex;
     }
+
     button {
       cursor: pointer;
       transition: all 0.3s ease;
+      border: none;
+      border-radius: 25px;
+      font-weight: 900;
+      padding: 12px 28px; /* Default padding */
     }
+     button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
     input[type="text"],
     input[type="email"],
     input[type="password"],
     input[type="number"],
     input[type="date"],
-    input[type="file"] {
+    input[type="file"],
+    input[type="tel"],
+    textarea {
       outline: none;
+      font-family: Arial, sans-serif;
+      font-size: 1rem;
     }
+
     .toast {
       position: fixed;
       top: 20px;
@@ -47,10 +71,16 @@
     .toast.success { background: #4CAF50; }
     .toast.error { background: #f44336; }
     .toast.info { background: #2196F3; }
+
     @keyframes slideIn {
-      from { transform: translateX(400px); opacity: 0; }
+      from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
+    @keyframes slideOut { /* Added slideOut for toast */
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
     .loading {
       display: inline-block;
       width: 20px;
@@ -59,69 +89,120 @@
       border-top: 3px solid #1976D2;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-left: 10px;
+      vertical-align: middle;
+      margin-left: 5px;
+    }
+    .loading-inline { /* Centered spinner */
+      margin: 40px auto;
+      border-color: #ccc;
+      border-top-color: #1976D2;
+      display: block;
+      width: 40px;
+      height: 40px;
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
     }
     th, td {
-      padding: 12px;
+      padding: 12px 15px;
       text-align: left;
-      border: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      color: #333; /* Ensure dark text */
     }
     th {
       background: #1976D2;
       color: white;
       font-weight: bold;
+      border-bottom: 2px solid #145A9E;
     }
-    tr:hover {
-      background: #f5f5f5;
+    td a {
+        color: #1976D2;
+        font-weight: bold;
+        text-decoration: none;
     }
+    td a:hover { text-decoration: underline; }
+    tr:hover { background: #f0f4f8; }
+    tr:last-child td { border-bottom: none; }
+
+    .footer { /* Footer styling */
+      background: #1976D2;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-weight: 600;
+      margin-top: auto; /* Push footer down */
+    }
+    .confirm-checkbox-container { /* Checkbox alignment helper */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: left;
+        margin-top: 20px;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+     }
+      .confirm-checkbox-container input { margin-right: 8px; width: auto; margin-top: 0; margin-bottom: 0; }
+      .confirm-checkbox-container label { margin-bottom: 0; }
+
+     /* Style for pagination controls container */
+      .pagination-controls {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 20px;
+          padding: 0 10px;
+      }
   </style>
 </head>
 <body>
 
-  <!-- WELCOME PAGE -->
+  <!-- ======================= -->
+  <!-- ===== WELCOME PAGE ==== -->
+  <!-- ======================= -->
   <div id="welcome" class="page active" style="background: linear-gradient(to bottom, #1E88E5, #ffffff); flex-direction: column; justify-content: space-between;">
     <div style="padding: 30px; text-align: left;">
       <h1 style="font-weight: 900; font-size: 4rem; margin: 0;">TaxBUZZ</h1>
       <h3 style="font-weight: 700; font-size: 2rem; margin: 1px 0 0 0;">Keep track on your Tax</h3>
     </div>
-
     <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
       <h3 style="font-weight: 500; font-size: 2rem; margin: 1px 0 0 0;">Explore our Services</h3>
       <button onclick="navigateTo('loginSignup')"
-        style="background: black; color: white; border-radius: 40px; padding: 18px 60px; font-size: 1.5rem; font-weight: 900; box-shadow: 6px 6px 0px #333; border: none; margin-top: 20px;"
+        style="background: black; color: white; border-radius: 40px; padding: 18px 60px; font-size: 1.5rem; box-shadow: 6px 6px 0px #333; margin-top: 20px;"
         onmouseover="this.style.background='#444'; this.style.boxShadow='8px 8px 0px #111'; this.style.transform='translateY(-4px)';"
         onmouseout="this.style.background='black'; this.style.boxShadow='6px 6px 0px #333'; this.style.transform='translateY(0px)';">
         Get Started
       </button>
     </div>
-
-    <div style="background: #1976D2; color: white; text-align: center; padding: 20px; font-size: 1rem; font-weight: 600;">
+    <div class="footer" style="padding: 20px; font-size: 1rem;">
       NOTICE: Everything in this site is confidential to ensure user's safety
     </div>
   </div>
 
-  <!-- LOGIN/SIGNUP CHOICE PAGE -->
+  <!-- ============================= -->
+  <!-- ===== LOGIN/SIGNUP PAGE ===== -->
+  <!-- ============================= -->
   <div id="loginSignup" class="page" style="background: linear-gradient(to bottom, #1E88E5, #fff); flex-direction: column; justify-content: space-between;">
     <div style="padding: 30px; text-align: left;">
       <h1 style="font-size: 4rem; margin: 0; font-weight: 900;">TaxBUZZ</h1>
       <h3 style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">Keep track on your Tax</h3>
     </div>
-
-    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 40px;">
       <div style="display: flex; justify-content: center; gap: 80px;">
         <div style="text-align: center;">
           <p style="margin-bottom: 10px;">Already have an Account</p>
           <button onclick="navigateTo('login')"
-            style="background: black; color: white; border: none; border-radius: 25px; padding: 15px 40px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
+            style="background: black; color: white; padding: 15px 40px; box-shadow: 5px 5px 0 #333;"
             onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
             onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
             LOGIN
@@ -130,479 +211,702 @@
         <div style="text-align: center;">
           <p style="margin-bottom: 10px;">New User</p>
           <button onclick="navigateTo('register')"
-            style="background: black; color: white; border: none; border-radius: 25px; padding: 15px 40px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
+            style="background: black; color: white; padding: 15px 40px; box-shadow: 5px 5px 0 #333;"
             onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
             onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
             SIGN UP
           </button>
         </div>
       </div>
-
       <div>
         <button onclick="navigateTo('welcome')"
-          style="background: black; color: white; border: none; border-radius: 25px; padding: 12px 35px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
-          onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
-          onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
+          style="background: #6c757d; color: white; padding: 12px 35px; box-shadow: 5px 5px 0 #495057;"
+          onmouseover="this.style.background='#5a6268'; this.style.boxShadow='7px 7px 0 #343a40';"
+          onmouseout="this.style.background='#6c757d'; this.style.boxShadow='5px 5px 0 #495057';">
           BACK
         </button>
       </div>
     </div>
-
-    <div style="background: #1976D2; color: white; text-align: center; padding: 8px; font-weight: 600;">
+    <div class="footer" style="padding: 10px;">
       NOTICE: Everything in this site is confidential to ensure user's safety
     </div>
   </div>
 
-  <!-- LOGIN PAGE -->
+  <!-- ======================= -->
+  <!-- ====== LOGIN PAGE ===== -->
+  <!-- ======================= -->
   <div id="login" class="page" style="background: linear-gradient(to bottom, #1E88E5, #fff); flex-direction: column; justify-content: space-between;">
-    <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 50px;">
-      <div style="max-width: 40%; display: flex; flex-direction: column; justify-content: center; margin-left: 80px;">
-        <h1 style="font-size: 4rem; margin: 10px 0; font-weight: 900;">TaxBUZZ</h1>
-        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700;">Keep track on your Tax</h3>
-      </div>
-
-      <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 380px; margin-right: 80px;">
-        <h2 style="margin-bottom: 20px; font-weight: 800; text-align: center; color: #1976D2;">Login</h2>
-        <form id="loginForm" onsubmit="handleLogin(event)">
-          <input type="email" id="loginEmail" placeholder="Email" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <input type="password" id="loginPassword" placeholder="Password" required style="width: 100%; padding: 12px; margin: 8px 0 15px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <button type="submit"
-            style="width: 100%; background: black; color: white; border: none; border-radius: 25px; padding: 15px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
-            onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
-            onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
-            LOGIN
-          </button>
-        </form>
-        <button onclick="navigateTo('welcome')"
-          style="margin-top: 15px; width: 100%; background: #1976D2; color: white; border: none; border-radius: 25px; padding: 12px; font-weight: 800; box-shadow: 5px 5px 0 #145A9E;"
-          onmouseover="this.style.background='#1565C0'; this.style.boxShadow='7px 7px 0 #0D3C75';"
-          onmouseout="this.style.background='#1976D2'; this.style.boxShadow='5px 5px 0 #145A9E';">
-          BACK
-        </button>
-      </div>
-    </div>
-
-    <div style="background: #1976D2; color: white; text-align: center; padding: 12px; font-weight: 600;">
-      © 2025 TaxBUZZ – All rights reserved
-    </div>
+     <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-around; align-items: center; padding: 50px;"> {/* Changed justify */}
+         <div style="max-width: 45%; display: flex; flex-direction: column; justify-content: center;"> {/* Adjusted width */}
+             <h1 style="font-size: 4rem; margin: 10px 0; font-weight: 900;">TaxBUZZ</h1>
+             <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700;">Keep track on your Tax</h3>
+         </div>
+         <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 100%; max-width: 380px;">
+             <h2 style="margin-bottom: 20px; font-weight: 800; text-align: center; color: #1976D2;">Login</h2>
+             <form id="loginForm" onsubmit="handleLogin(event)">
+                 <input type="email" id="loginEmail" placeholder="Email" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                 <input type="password" id="loginPassword" placeholder="Password" required style="width: 100%; padding: 12px; margin: 8px 0 15px 0; border-radius: 25px; border: 1px solid #ccc;">
+                 <button type="submit"
+                   style="width: 100%; background: black; color: white; padding: 15px; box-shadow: 5px 5px 0 #333;"
+                   onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
+                   onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
+                   LOGIN
+                 </button>
+             </form>
+             <button onclick="navigateTo('loginSignup')"
+               style="margin-top: 15px; width: 100%; background: #6c757d; color: white; padding: 12px; font-weight: 800; box-shadow: 5px 5px 0 #495057;"
+               onmouseover="this.style.background='#5a6268'; this.style.boxShadow='7px 7px 0 #343a40';"
+               onmouseout="this.style.background='#6c757d'; this.style.boxShadow='5px 5px 0 #495057';">
+               BACK
+             </button>
+         </div>
+     </div>
+     <div class="footer">
+         © 2025 TaxBUZZ – All rights reserved
+     </div>
   </div>
 
-  <!-- REGISTER PAGE -->
+
+  <!-- ========================== -->
+  <!-- ===== REGISTER PAGE ====== -->
+  <!-- ========================== -->
   <div id="register" class="page" style="background: linear-gradient(to bottom, #1E88E5, #fff); flex-direction: column; justify-content: space-between;">
-    <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 50px;">
-      <div style="max-width: 40%; display: flex; flex-direction: column; justify-content: center; margin-left: 80px;">
-        <h3 style="margin: 0; font-weight: 600;">Welcome to</h3>
-        <h1 style="font-size: 4rem; margin: 10px 0; font-weight: 900;">TaxBUZZ</h1>
-        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700;">Keep track on your Tax</h3>
+      <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-around; align-items: center; padding: 50px;"> {/* Changed justify */}
+          <div style="max-width: 45%; display: flex; flex-direction: column; justify-content: center;"> {/* Adjusted width */}
+              <h3 style="margin: 0; font-weight: 600;">Welcome to</h3>
+              <h1 style="font-size: 4rem; margin: 10px 0; font-weight: 900;">TaxBUZZ</h1>
+              <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700;">Keep track on your Tax</h3>
+          </div>
+          <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 100%; max-width: 380px;">
+              <h2 style="margin-bottom: 20px; font-weight: 800; text-align: center; color: #1976D2;">Create Account</h2>
+              <form id="registerForm" onsubmit="handleRegister(event)">
+                  <input type="text" id="registerUsername" placeholder="Username" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                  <input type="text" id="registerFullName" placeholder="Full Name" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                  <input type="email" id="registerEmail" placeholder="Email" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                  <input type="tel" id="registerPhone" placeholder="Phone Number (Optional)" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                  <input type="password" id="registerPassword" placeholder="Password (min 6 chars)" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                  <input type="password" id="confirmPassword" placeholder="Confirm Password" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc;">
+                  <button type="submit"
+                    style="width: 100%; background: black; color: white; padding: 15px; box-shadow: 5px 5px 0 #333; margin-top: 15px;"
+                    onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
+                    onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
+                    SIGN UP
+                  </button>
+              </form>
+              <button onclick="navigateTo('loginSignup')"
+                style="margin-top: 15px; width: 100%; background: #6c757d; color: white; padding: 12px; font-weight: 800; box-shadow: 5px 5px 0 #495057;"
+                onmouseover="this.style.background='#5a6268'; this.style.boxShadow='7px 7px 0 #343a40';"
+                onmouseout="this.style.background='#6c757d'; this.style.boxShadow='5px 5px 0 #495057';">
+                BACK
+              </button>
+          </div>
       </div>
-
-      <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 380px; margin-right: 80px;">
-        <h2 style="margin-bottom: 20px; font-weight: 800; text-align: center; color: #1976D2;">Create Account</h2>
-        <form id="registerForm" onsubmit="handleRegister(event)">
-          <input type="text" id="registerUsername" placeholder="Username" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <input type="text" id="registerFullName" placeholder="Full Name" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <input type="email" id="registerEmail" placeholder="Email" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <input type="tel" id="registerPhone" placeholder="Phone Number" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <input type="password" id="registerPassword" placeholder="Password" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <input type="password" id="confirmPassword" placeholder="Confirm Password" required style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 25px; border: 1px solid #ccc; font-size: 1rem;">
-          <button type="submit"
-            style="width: 100%; background: black; color: white; border: none; border-radius: 25px; padding: 15px; font-weight: 900; box-shadow: 5px 5px 0 #333; margin-top: 15px;"
-            onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
-            onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
-            SIGN UP
-          </button>
-        </form>
-        <button onclick="navigateTo('loginSignup')"
-          style="margin-top: 15px; width: 100%; background: #1976D2; color: white; border: none; border-radius: 25px; padding: 12px; font-weight: 800; box-shadow: 5px 5px 0 #145A9E;"
-          onmouseover="this.style.background='#1565C0'; this.style.boxShadow='7px 7px 0 #0D3C75';"
-          onmouseout="this.style.background='#1976D2'; this.style.boxShadow='5px 5px 0 #145A9E';">
-          BACK
-        </button>
+      <div class="footer">
+          © 2025 TaxBUZZ – All rights reserved
       </div>
-    </div>
-
-    <div style="background: #1976D2; color: white; text-align: center; padding: 12px; font-weight: 600;">
-      © 2025 TaxBUZZ – All rights reserved
-    </div>
   </div>
 
-  <!-- DASHBOARD PAGE -->
+
+  <!-- ========================== -->
+  <!-- ===== DASHBOARD PAGE ===== -->
+  <!-- ========================== -->
   <div id="dashboard" class="page" style="background: linear-gradient(to bottom, #1E88E5, #fff); flex-direction: column; justify-content: space-between;">
     <div style="padding: 30px; text-align: center;">
       <h1 style="font-size: 3rem; font-weight: 1000; margin: 0;">TaxBUZZ</h1>
       <h3 style="margin: 2px 0 0 0; font-size: 1.5rem; font-weight: 600;">Keep track on your Tax</h3>
-      <p id="welcomeUser" style="margin-top: 10px; font-weight: 600;"></p>
+      <p id="welcomeUser" style="margin-top: 10px; font-weight: 600; font-size: 1.1rem; color: #145A9E;"></p>
     </div>
-
     <div style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 30px; flex-wrap: wrap; padding: 20px;">
       <button onclick="navigateTo('records')"
-        style="background: black; color: white; border: none; border-radius: 25px; padding: 15px 40px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
+        style="background: black; color: white; padding: 15px 40px; box-shadow: 5px 5px 0 #333;"
         onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
         onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
-        View Tax Records
+        View Records & Documents
       </button>
-
       <button onclick="navigateTo('documents')"
-        style="background: black; color: white; border: none; border-radius: 25px; padding: 15px 40px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
-        onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
-        onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
-        My Documents
-      </button>
-
-      <button onclick="navigateTo('notifications')"
-        style="background: black; color: white; border: none; border-radius: 25px; padding: 15px 40px; font-weight: 900; box-shadow: 5px 5px 0 #333;"
-        onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
-        onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
-        Notifications
-      </button>
-    </div>
-
-    <div style="text-align: center; margin-bottom: 20px;">
-      <button onclick="handleLogout()"
-        style="background: #1976D2; color: white; border: none; border-radius: 25px; padding: 12px 35px; font-weight: 800; box-shadow: 5px 5px 0 #145A9E;"
+        style="background: #1976D2; color: white; padding: 15px 40px; box-shadow: 5px 5px 0 #145A9E;"
         onmouseover="this.style.background='#1565C0'; this.style.boxShadow='7px 7px 0 #0D3C75';"
         onmouseout="this.style.background='#1976D2'; this.style.boxShadow='5px 5px 0 #145A9E';">
+        Upload New Document
+      </button>
+    </div>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <button onclick="handleLogout()"
+        style="background: #dc3545; color: white; padding: 12px 35px; font-weight: 800; box-shadow: 5px 5px 0 #a71d2a;"
+        onmouseover="this.style.background='#c82333'; this.style.boxShadow='7px 7px 0 #841823';"
+        onmouseout="this.style.background='#dc3545'; this.style.boxShadow='5px 5px 0 #a71d2a';">
         LOGOUT
       </button>
     </div>
-
-    <div style="background: #1976D2; color: white; text-align: center; padding: 12px; font-weight: 600;">
+    <div class="footer">
       © 2025 TaxBUZZ – All rights reserved
     </div>
   </div>
 
-  <!-- TAX RECORDS PAGE -->
+  <!-- ================================ -->
+  <!-- ===== RECORDS & DOCS PAGE ==== -->
+  <!-- ================================ -->
   <div id="records" class="page" style="background: linear-gradient(to bottom, #1E88E5, #fff); flex-direction: column; justify-content: space-between;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:20px 40px 10px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 40px 10px 40px;">
       <div>
-        <h1 style="margin:0; font-size:2.5rem; font-weight:900;">TaxBUZZ</h1>
+        <h1 style="margin:0; font-size:2.5rem; font-weight:900;">Tax Records & Documents</h1>
         <div style="margin-top:4px; font-weight:700;">Keep track on your Tax</div>
       </div>
-      <div>
-        <div style="font-size:2rem; font-weight:900;">Dashboard</div>
-      </div>
+       <button onclick="navigateTo('dashboard')" style="background:black; color:white; box-shadow:5px 5px 0 #333; padding: 10px 25px; height: fit-content;">Dashboard</button>
     </div>
-    
-    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; margin:0 40px; background:#2aa4bd; border-radius:30px; padding:20px; box-shadow:0 8px 0 rgba(0,0,0,0.2);">
+
+    <!-- Main container for search, tables, pagination -->
+    <div style="flex:1; display:flex; flex-direction:column; margin:20px 40px; background:#2aa4bd; border-radius:30px; padding:20px; box-shadow:0 8px 0 rgba(0,0,0,0.2);">
+      <!-- Search/Sort controls -->
       <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-        <div style="position:relative; width:180px;">
-          <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.9rem;">🔍</span>
-          <input type="text" id="recordsSearch" placeholder="Find" style="width:100%; padding:7px 10px 7px 28px; border:none; border-radius:20px; box-shadow:3px 3px 0 #7ec0cd; font-size:0.85rem; outline:none;">
-        </div>
-        <div style="width:180px;">
-          <input type="text" id="recordsSort" placeholder="Sort by: Month/Year" style="width:100%; padding:7px 10px; border:none; border-radius:20px; box-shadow:3px 3px 0 #7ec0cd; font-size:0.85rem; outline:none;">
+        <div style="position:relative; width:48%;">
+          <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.9rem; color: #aaa;">🔍</span>
+          <!-- **** SEARCH INPUT ENABLED **** -->
+          <input type="text" id="recordsSearch" placeholder="Search records/docs..."
+                 style="width:100%; padding:8px 10px 8px 30px; border:none; border-radius:20px; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1); font-size:0.9rem; outline:none;">
         </div>
       </div>
-      
-      <div id="recordsContainer" style="flex:1; background:rgba(0,0,0,0.1); border-radius:6px; padding:10px; min-height:300px;"></div>
-      
-      <div style="display:flex; justify-content:space-between; margin-top:15px;">
-        <button onclick="previousRecordsPage()" style="background:black; color:white; border:none; border-radius:22px; padding:10px 28px; font-weight:900; box-shadow:5px 5px 0 #333; cursor:pointer;">Previous</button>
-        <button onclick="nextRecordsPage()" style="background:black; color:white; border:none; border-radius:22px; padding:10px 28px; font-weight:900; box-shadow:5px 5px 0 #333; cursor:pointer;">Next</button>
+
+      <!-- Container for tables -->
+      <div id="recordsContainer" style="flex:1; background:rgba(255,255,255,0.15); border-radius:8px; padding:15px; min-height:300px; color: #333; overflow-y: auto;">
+         <!-- Content loaded dynamically -->
+      </div>
+
+      <!-- Pagination controls -->
+      <div class="pagination-controls">
+        <button id="prevDocumentsButton" onclick="previousDocumentsPage()" style="background:#6c757d; color:white; box-shadow:5px 5px 0 #495057;" onmouseover="this.style.background='#5a6268'; this.style.boxShadow='7px 7px 0 #343a40';" onmouseout="this.style.background='#6c757d'; this.style.boxShadow='5px 5px 0 #495057';">Previous</button>
+        <button id="nextDocumentsButton" onclick="nextDocumentsPage()" style="background:#6c757d; color:white; box-shadow:5px 5px 0 #495057;" onmouseover="this.style.background='#5a6268'; this.style.boxShadow='7px 7px 0 #343a40';" onmouseout="this.style.background='#6c757d'; this.style.boxShadow='5px 5px 0 #495057';">Next</button>
       </div>
     </div>
-    
-    <div style="padding:15px 40px; text-align:center;">
-      <button onclick="navigateTo('dashboard')" style="background:black; color:white; border:none; border-radius:22px; padding:12px 28px; font-weight:900; box-shadow:6px 6px 0 #333; cursor:pointer;">
-        Go back 
-      </button>
-    </div>
+
+    <!-- Go back button removed from here, integrated above -->
+
+    <div class="footer" style="margin-top: 0;">
+         © 2025 TaxBUZZ – All rights reserved
+     </div>
   </div>
 
- <!-- DOCUMENTS PAGE -->
-  <div id="documents" class="page" style="background: linear-gradient(to bottom, #1E88E5, #ffffff); flex-direction: column; justify-content: space-between; padding: 50px; text-align: center; min-height:100vh;">
-    <div>
+  <!-- ============================ -->
+  <!-- ===== UPLOAD DOC PAGE ==== -->
+  <!-- ============================ -->
+  <div id="documents" class="page" style="background: linear-gradient(to bottom, #1E88E5, #ffffff); flex-direction: column; justify-content: space-between; padding-top: 50px; text-align: center;">
+    <div style="padding: 0 50px;">
       <h1 style="font-weight: 900; font-size: 3rem; margin-bottom:5px;">TaxBUZZ</h1>
-      <h2 style="font-weight: 800; margin-top:0; color:#0D47A1;">Upload Receipt</h2>
+      <h2 style="font-weight: 800; margin-top:0; color:#0D47A1;">Upload Document</h2>
     </div>
-    
-    <div style="background: white; border-radius: 25px; padding: 40px; max-width: 600px; margin: 30px auto; box-shadow:0 6px 15px rgba(0,0,0,0.2);">
+
+    <div style="background: white; border-radius: 25px; padding: 40px; max-width: 600px; margin: 30px auto; box-shadow:0 6px 15px rgba(0,0,0,0.2); width: 90%;">
       <form id="uploadDocumentForm" onsubmit="handleDocumentUpload(event)">
         <div style="margin-bottom: 20px;">
-          <input type="text" id="documentType" placeholder="Type of file upload" required style="padding: 15px 40px; border-radius: 25px; border:1px solid #ccc; width: 100%; max-width:300px; outline:none;">
+           <label for="documentType" style="display:block; margin-bottom: 5px; font-weight: bold; text-align: left;">Category:</label>
+           <input type="text" id="documentType" placeholder="e.g., Tax Form W2, Business Receipt" required style="padding: 15px; border-radius: 10px; border:1px solid #ccc; width: 100%; outline:none;">
         </div>
-        
-        <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">
-          <div style="text-align:center; cursor:pointer;" onclick="document.getElementById('fileInput').click();">
-            <div style="width: 80px; height: 80px; background: #E3F2FD; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto;">📁</div>
-            <p style="margin-top:8px; font-weight:600;">Open File</p>
-            <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none;" onchange="handleFileSelect(event)">
-          </div>
-          <div style="text-align:center; cursor:pointer;" onclick="handleCameraUpload()">
-            <div style="width: 80px; height: 80px; background: #E3F2FD; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto;">📷</div>
-            <p style="margin-top:8px; font-weight:600;">Use Camera</p>
-          </div>
-        </div>
-        
-        <div id="filePreview" style="margin-bottom: 20px; display:none;">
-          <p style="font-size:0.9rem; color:#666;">Selected: <span id="fileName"></span></p>
-        </div>
-        
+
+         <div style="margin-bottom: 20px;">
+              <label style="display:block; margin-bottom: 5px; font-weight: bold; text-align: left;">Select File:</label>
+             <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 10px;">
+                 <div style="text-align:center; cursor:pointer;" onclick="document.getElementById('fileInput').click();">
+                   <div style="width: 80px; height: 80px; background: #E3F2FD; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto; border: 2px dashed #1976D2;">📁</div>
+                   <p style="margin-top:8px; font-weight:600;">Browse File</p>
+                   <input type="file" id="fileInput" accept="image/png,image/jpeg,.pdf,.doc,.docx" style="display:none;" onchange="handleFileSelect(event)">
+                 </div>
+              </div>
+              <div id="filePreview" style="margin-bottom: 10px; display:none; text-align: left;">
+                 <p style="font-size:0.9rem; color:#666;">Selected: <span id="fileName" style="font-weight: bold;"></span></p>
+              </div>
+         </div>
+
         <div style="margin-bottom: 20px;">
-          <input type="date" id="datePaid" placeholder="Date paid: MM/DD/YYYY" required style="padding: 15px 40px; border-radius: 25px; border:1px solid #ccc; width: 100%; max-width:300px; outline:none;">
+           <label for="documentDescription" style="display:block; margin-bottom: 5px; font-weight: bold; text-align: left;">Description (Optional):</label>
+           <textarea id="documentDescription" placeholder="Add a short note about this file..." style="padding: 15px; border-radius: 10px; border:1px solid #ccc; width: 100%; outline:none; font-family: Arial, sans-serif; min-height: 80px;"></textarea>
         </div>
-        
-        <div style="margin-bottom: 20px;">
-          <input type="number" id="receiptNumber" placeholder="Number" required style="padding: 15px 40px; border-radius: 25px; border:1px solid #ccc; width: 100%; max-width:300px; outline:none;">
-        </div>
-        
-        <button type="submit" style="background: #1976D2; color: white; border-radius: 25px; padding: 15px 40px; font-weight: 900; border:none; box-shadow: 5px 5px 0px #145A9E; cursor:pointer;">Upload</button>
-        
-        <div style="text-align: left; margin-top: 20px; max-width:300px; margin-left:auto; margin-right:auto;">
+
+        <div class="confirm-checkbox-container">
           <input type="checkbox" id="confirmDetailsUpload" required style="cursor:pointer;">
-          <label for="confirmDetailsUpload" style="cursor:pointer;"> Confirm the details are correct</label>
+          <label for="confirmDetailsUpload" style="cursor:pointer; font-weight: bold;">I confirm this is the correct file</label>
         </div>
+
+        <button type="submit" style="width: 100%; margin-top: 20px; background: #1976D2; color: white; padding: 15px; box-shadow: 5px 5px 0px #145A9E; border-radius: 25px;" onmouseover="this.style.background='#1565C0'; this.style.boxShadow='7px 7px 0 #0D3C75';" onmouseout="this.style.background='#1976D2'; this.style.boxShadow='5px 5px 0 #145A9E';">Upload Document</button>
       </form>
-      
-      <button onclick="navigateTo('dashboard')" 
-              style="background: black; color: white; border:none; border-radius: 25px; padding: 15px 40px; font-weight: 900; box-shadow: 5px 5px 0px #333; margin-top: 30px; cursor:pointer;">
+
+      <button onclick="navigateTo('dashboard')"
+              style="background: black; color: white; padding: 15px 40px; box-shadow: 5px 5px 0px #333; margin-top: 30px;"
+              onmouseover="this.style.background='#444'; this.style.boxShadow='7px 7px 0 #111';"
+              onmouseout="this.style.background='black'; this.style.boxShadow='5px 5px 0 #333';">
         Go back to Main page
       </button>
     </div>
-    
-    <div style="background:#1976D2; color:white; text-align:center; padding:10px; font-weight:600; border-radius:10px;">
-      NOTICE: Everything in this site is confidential to ensure user's safety
-    </div>
-  </div>
-  <!-- NOTIFICATIONS PAGE -->
-  <div id="notifications" class="page" style="background: linear-gradient(to bottom, #1E88E5, #ffffff); flex-direction: column; padding: 50px; min-height:100vh;">
-    <div style="text-align: center;">
-      <h1 style="font-weight: 900; font-size: 3rem; margin-bottom:5px;">TaxBUZZ</h1>
-      <h2 style="font-weight: 800; margin-top:0; color:#0D47A1;">Income Monitoring</h2>
-    </div>
-    
-    <div style="background:white; border-radius:20px; padding:30px; box-shadow:0 6px 15px rgba(0,0,0,0.2); max-width:900px; margin:auto; flex:1; display:flex; flex-direction:column;">
-      <input type="text" id="notificationsSort" placeholder="Sort by: Month/Year" 
-             style="width:60%; padding:15px; border-radius:25px; border:1px solid #ccc; margin-bottom:30px; outline:none;">
-      
-      <div id="notificationsContainer" style="flex:1; margin-bottom: 20px; min-height:200px;"></div>
-      
-      <div style="text-align: center; margin-bottom:20px;">
-        <button onclick="previousNotificationsPage()" style="background:#1976D2; color:white; border:none; border-radius:25px; padding:15px 40px; font-weight:900; box-shadow:5px 5px 0 #145A9E; margin-right:20px; cursor:pointer;">Previous</button>
-        <button onclick="nextNotificationsPage()" style="background:#1976D2; color:white; border:none; border-radius:25px; padding:15px 40px; font-weight:900; box-shadow:5px 5px 0 #145A9E; cursor:pointer;">Next</button>
-      </div>
-      
-      <button onclick="navigateTo('dashboard')" 
-              style="background:black; color:white; border:none; border-radius:25px; padding:15px 40px; font-weight:900; box-shadow:5px 5px 0 #333; margin-top:10px; cursor:pointer;">
-        Go back to Main page
-      </button>
-    </div>
-    
-    <div style="background:#1976D2; color:white; text-align:center; padding:10px; font-weight:600; margin-top:30px; border-radius:10px;">
+
+    <div class="footer">
       NOTICE: Everything in this site is confidential to ensure user's safety
     </div>
   </div>
 
+  <!-- ===================== -->
+  <!-- ===== JAVASCRIPT ==== -->
+  <!-- ===================== -->
   <script>
-    // API Base URL
-    const API_URL = 'http://localhost:3000/api';
-    
-    // Current user data
-    let currentUser = null;
+    // --- Configuration ---
+    const API_URL = '/api'; // Use relative path for API calls
 
-    // Navigation function
+    // --- State Variables ---
+    let currentUser = null; // Holds logged-in user data {id, username, ...}
+    let selectedFile = null; // Holds the file selected for upload
+    let currentDocumentsPage = 1; // Tracks current page for document pagination
+    const documentsPerPage = 5; // How many documents to show per page
+    let totalDocuments = 0; // Total documents matching current filter (updated by API)
+    let currentSearchTerm = ''; // Holds the current search query
+    let searchDebounceTimeout = null; // Timer ID for debouncing search input
+
+    // --- Utility: Page Navigation ---
     function navigateTo(pageId) {
+      console.log(`Navigating to: ${pageId}`);
+      // Hide all pages
       document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-      
-      // Load data when navigating to specific pages
-      if (pageId === 'dashboard' && currentUser) {
-        document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.full_name || currentUser.username}!`;
+      const pageElement = document.getElementById(pageId);
+      // Show the target page
+      if (pageElement) {
+          pageElement.classList.add('active');
+      } else {
+          console.error(`Page with ID ${pageId} not found! Defaulting to welcome.`);
+          document.getElementById('welcome').classList.add('active'); // Fallback
+          return;
       }
-      if (pageId === 'records') loadTaxRecords();
-      if (pageId === 'documents') loadDocuments();
-      if (pageId === 'notifications') loadNotifications();
+
+      // Actions specific to the navigated page
+      if (pageId === 'dashboard' && currentUser) {
+        // Display welcome message on dashboard
+        document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.full_name || currentUser.username || 'User'}!`;
+      }
+      if (pageId === 'records') {
+          // Reset state when navigating to the records page
+          currentDocumentsPage = 1; // Go back to first page of documents
+          currentSearchTerm = ''; // Clear any previous search
+          const searchInput = document.getElementById('recordsSearch');
+          if (searchInput) searchInput.value = ''; // Clear search input field
+          loadTaxRecords(); // Load initial data for the records page
+      }
+      // Note: Notifications section removed
     }
 
-    // Show toast notification
+    // --- Utility: Show Toast Notifications ---
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
+      toast.className = `toast ${type}`; // Apply 'success', 'error', or 'info' class
       toast.textContent = message;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+      // Set timer to start fading out the toast
+      setTimeout(() => {
+          if (toast) { // Ensure toast wasn't removed prematurely
+              toast.style.animation = 'slideOut 0.5s ease forwards';
+              // Set another timer to remove the element after fade out animation completes
+              setTimeout(() => toast ? toast.remove() : null, 500);
+          }
+       }, 3000); // Start fade out after 3 seconds
     }
 
-    // Handle Registration
+     // Inject CSS for slideOut animation once
+     if (!document.getElementById('slideOutAnimation')) {
+         const styleSheet = document.createElement("style");
+         styleSheet.id = 'slideOutAnimation';
+         styleSheet.type = "text/css";
+         styleSheet.innerText = `@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }`;
+         document.head.appendChild(styleSheet);
+     }
+
+    // --- Utility: API Call Helper ---
+    // Simplifies making fetch requests and handling common errors/responses
+    async function apiCall(endpoint, method = 'GET', body = null) {
+        const options = { method, headers: {} };
+        // Don't set Content-Type for FormData; browser does it with boundary
+        if (body instanceof FormData) { options.body = body; }
+        // For JSON, set header and stringify body
+        else if (body) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(body); }
+
+        try {
+            const response = await fetch(API_URL + endpoint, options);
+            const contentType = response.headers.get("content-type");
+
+            // Handle non-OK responses (e.g., 400, 404, 500)
+            if (!response.ok) {
+                 let errorMsg = `HTTP error! status: ${response.status}`;
+                 // Try to parse JSON error message from backend
+                 if (contentType && contentType.includes("application/json")) {
+                     try {
+                         const errorData = await response.json();
+                         errorMsg = errorData.error || errorData.message || errorMsg;
+                     } catch (jsonError) { /* Ignore if error response is not valid JSON */ }
+                 } else {
+                    // Try reading plain text error if not JSON
+                     try { errorMsg = await response.text(); }
+                     catch (textError) { /* Ignore if cannot read text */ }
+                 }
+                 throw new Error(errorMsg); // Throw error to be caught below
+            }
+
+            // Handle successful but empty responses (like DELETE)
+            if (response.status === 204 || !contentType) {
+                 return {}; // Return empty object for consistency
+            }
+            // Handle successful JSON responses
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                return data;
+            }
+            // Handle unexpected successful non-JSON responses (treat as text)
+            console.warn("Received non-JSON response:", response);
+            return { message: await response.text() }; // Return text as message
+
+        } catch (error) {
+            // Log the detailed error and show a user-friendly toast
+            console.error(`API call to ${method} ${endpoint} failed:`, error);
+            showToast( error.message || 'A network error occurred. Please try again.' , 'error');
+            throw error; // Re-throw error so calling function knows it failed
+        }
+    }
+
+
+    // --- Authentication Logic ---
     async function handleRegister(event) {
       event.preventDefault();
-      
-      const username = document.getElementById('registerUsername').value;
-      const fullName = document.getElementById('registerFullName').value;
-      const email = document.getElementById('registerEmail').value;
-      const phone = document.getElementById('registerPhone').value;
-      const password = document.getElementById('registerPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      
-      if (password !== confirmPassword) {
-        showToast('Passwords do not match!', 'error');
-        return;
-      }
-      
+      const form = event.target;
+      // Get values from form inputs
+      const username = form.querySelector('#registerUsername').value.trim();
+      const fullName = form.querySelector('#registerFullName').value.trim();
+      const email = form.querySelector('#registerEmail').value.trim();
+      const phone = form.querySelector('#registerPhone').value.trim();
+      const password = form.querySelector('#registerPassword').value; // No trim for password
+      const confirmPassword = form.querySelector('#confirmPassword').value;
+
+      // Basic client-side validation
+      if (!username || !fullName || !email || !password) return showToast('Please fill all required fields.', 'error');
+      if (password !== confirmPassword) { return showToast('Passwords do not match!', 'error'); }
+      if (password.length < 6) { return showToast('Password must be at least 6 characters.', 'error'); }
+
       try {
-        const response = await fetch(`${API_URL}/users/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password, full_name: fullName, phone })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-          showToast('Registration successful! Please login.', 'success');
-          document.getElementById('registerForm').reset();
-          navigateTo('login');
-        } else {
-          showToast(data.error || 'Registration failed', 'error');
-        }
-      } catch (error) {
-        console.error('Registration error:', error);
-        showToast('Network error. Please try again.', 'error');
-      }
+        // Send registration data to the backend API
+        await apiCall('/users/register', 'POST', { username, email, password, full_name: fullName, phone });
+        showToast('Registration successful! Please login.', 'success');
+        form.reset(); // Clear the form
+        navigateTo('login'); // Go to login page
+      } catch (error) { /* Error already shown by apiCall helper */ }
     }
 
-    // Handle Login
     async function handleLogin(event) {
       event.preventDefault();
-      
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      
+      const form = event.target;
+      const email = form.querySelector('#loginEmail').value.trim();
+      const password = form.querySelector('#loginPassword').value; // No trim
+
+      if (!email || !password) { return showToast('Email and password required.', 'error'); }
+
       try {
-        const response = await fetch(`${API_URL}/users/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-          currentUser = data.user;
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-          showToast('Login successful!', 'success');
-          navigateTo('dashboard');
-        } else {
-          showToast(data.error || 'Login failed', 'error');
+        // Send login credentials to the backend API
+        const data = await apiCall('/users/login', 'POST', { email, password });
+        currentUser = data.user; // Store the received user data
+
+        // **Critical Check:** Ensure the received user object has an ID
+        if (!currentUser || typeof currentUser.id === 'undefined') {
+             console.error("Login Error: User data from server missing ID:", data);
+             throw new Error("Login failed: Invalid user data received from server.");
         }
+
+        // Store user data in localStorage for session persistence
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showToast('Login successful!', 'success');
+        navigateTo('dashboard'); // Navigate to the main dashboard
       } catch (error) {
-        console.error('Login error:', error);
-        showToast('Network error. Please try again.', 'error');
+         // Show specific 'Invalid' message if available, otherwise generic
+         showToast(error.message.includes('Invalid') ? 'Invalid email or password.' : 'Login failed. Please check credentials or network.', 'error');
       }
     }
 
-    // Handle Logout
     function handleLogout() {
+      // Clear user state and stored data
       currentUser = null;
+      selectedFile = null; // Also clear any selected file
       localStorage.removeItem('currentUser');
       showToast('Logged out successfully', 'info');
-      navigateTo('welcome');
+      navigateTo('welcome'); // Go back to the welcome page
     }
 
-    // Load Tax Records
+    // --- Data Loading (Includes Search Logic) ---
     async function loadTaxRecords() {
-      if (!currentUser) return;
-      
-      try {
-        const response = await fetch(`${API_URL}/tax-records/${currentUser.user_id}`);
-        const records = await response.json();
-        
+        // Ensure user is logged in and has a valid ID
+        if (!currentUser || typeof currentUser.id === 'undefined') {
+            console.error("Cannot load records: User not logged in or ID missing.");
+            showToast('Session expired or invalid. Please log in again.', 'error');
+            return navigateTo('login'); // Redirect to login
+        }
+
         const container = document.getElementById('recordsContainer');
-        
-        if (records.length === 0) {
-          container.innerHTML = '<p>No tax records found.</p>';
-          return;
+        container.innerHTML = '<div class="loading loading-inline"></div>'; // Show loading spinner
+
+        // Prepare Search Query String
+        const searchTerm = currentSearchTerm.trim(); // Use the state variable
+        // Encode the search term for safe inclusion in URL
+        const searchQueryParam = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
+        // Determine connector for pagination params based on whether search exists
+        const paginationQueryParamBase = searchTerm ? '&' : '?';
+
+        try {
+            // --- Fetch Tax Records (with potential Search) ---
+            const taxRecordsUrl = `/tax-records/${currentUser.id}${searchQueryParam}`;
+            const records = await apiCall(taxRecordsUrl); // Use apiCall helper
+
+            let html = '<h2>Tax Records</h2>'; // Section title
+            if (!Array.isArray(records) || records.length === 0) {
+                // Display message indicating no results (considers if search was active)
+                html += `<p style="color: white; text-align: center;">${searchTerm ? 'No tax records found matching search.' : 'No tax records found.'}</p>`;
+            } else {
+                // Build HTML table for tax records
+                html += '<table><thead><tr><th>Year</th><th>Income</th><th>Deductions</th><th>Tax Paid</th><th>Status</th></tr></thead><tbody>';
+                records.forEach(record => {
+                    // Format currency values safely, handle nulls
+                    const income = record.income != null ? `$${Number(record.income).toLocaleString()}` : 'N/A';
+                    const deductions = record.deductions != null ? `$${Number(record.deductions).toLocaleString()}` : 'N/A';
+                    const taxPaid = record.tax_paid != null ? `$${Number(record.tax_paid).toLocaleString()}` : 'N/A';
+                    html += `<tr>
+                      <td>${record.tax_year || 'N/A'}</td>
+                      <td>${income}</td>
+                      <td>${deductions}</td>
+                      <td>${taxPaid}</td>
+                      <td>${record.status || 'N/A'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+            }
+
+            // --- Fetch Documents (Paginated with potential Search) ---
+            html += '<h2 style="margin-top: 30px; color: white;">My Uploaded Documents</h2>'; // Section title
+            // Construct URL including search (if any) and pagination parameters
+            const documentsUrl = `/documents/${currentUser.id}${searchQueryParam}${paginationQueryParamBase}page=${currentDocumentsPage}&limit=${documentsPerPage}`;
+            const docData = await apiCall(documentsUrl); // Use apiCall helper
+
+            const documents = docData.documents; // Array of documents for the current page
+            totalDocuments = docData.totalDocuments; // Total count matching the search filter
+
+            if (!Array.isArray(documents) || documents.length === 0) {
+                 // Display message indicating no results (considers if search was active)
+                html += `<p style="color: white; text-align: center;">${searchTerm ? 'No documents found matching search.' : 'No documents found.'}</p>`;
+            } else {
+                 // Build HTML table for documents
+                html += '<table><thead><tr><th>Category</th><th>Original File Name</th><th>Description</th><th>Uploaded</th></tr></thead><tbody>';
+                documents.forEach(doc => {
+                    // Display original name, fall back to unique stored name
+                    const displayName = doc.original_file_name || doc.file_name || 'Unnamed File';
+                    // Construct file path for link, ensure forward slashes
+                    const filePath = doc.file_path ? `/${doc.file_path.replace(/\\/g, '/')}` : '#';
+                    // Format uploaded date safely
+                    const uploadedDate = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'N/A';
+                    html += `<tr>
+                      <td>${doc.document_type || 'N/A'}</td>
+                      <td><a href="${filePath}" target="_blank">${displayName}</a></td>
+                      <td>${doc.description || 'N/A'}</td>
+                      <td>${uploadedDate}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+
+                // --- Add Pagination Info ---
+                const totalPages = Math.ceil( (totalDocuments || 0) / documentsPerPage);
+                if (totalPages > 0) { // Only show if there are pages
+                   // Display current page, total pages, and total found items
+                   html += `<p style="text-align: center; margin-top: 10px; font-weight: bold; color: white;">Page ${currentDocumentsPage} of ${totalPages} (Total Found: ${totalDocuments})</p>`;
+                }
+            }
+
+            // Update the container with the generated HTML
+            container.innerHTML = html;
+            // Enable/disable pagination buttons based on current state
+            updatePaginationButtons();
+
+        } catch (error) {
+            // If API call failed, show error message in container
+            container.innerHTML = '<p style="color: red; text-align: center; font-weight: bold;">Error loading data. Please check connection and try again.</p>';
+            updatePaginationButtons(); // Update buttons (likely disable them)
         }
-        
-        let html = '<table><tr><th>Year</th><th>Income</th><th>Deductions</th><th>Tax Paid</th><th>Status</th></tr>';
-        records.forEach(record => {
-          html += `<tr>
-            <td>${record.tax_year}</td>
-            <td>$${record.income}</td>
-            <td>$${record.deductions}</td>
-            <td>$${record.tax_paid}</td>
-            <td>${record.status}</td>
-          </tr>`;
-        });
-        html += '</table>';
-        container.innerHTML = html;
-      } catch (error) {
-        console.error('Error loading tax records:', error);
-        showToast('Failed to load tax records', 'error');
-      }
     }
 
-    // Load Documents
-    async function loadDocuments() {
-      if (!currentUser) return;
-      
+
+    // --- File Upload Logic ---
+    function handleFileSelect(event) {
+        selectedFile = event.target.files[0]; // Get the selected file
+        const fileNameDisplay = document.getElementById('fileName');
+        const filePreview = document.getElementById('filePreview');
+
+        if (selectedFile) {
+            // Client-side validation for allowed file types
+            const allowedTypes = /(\.jpg|\.jpeg|\.png|\.pdf|\.doc|\.docx)$/i; // Regex for allowed extensions
+            if (!allowedTypes.exec(selectedFile.name)) {
+                // If invalid type, show error, reset state, clear input
+                showToast('Invalid file type. Allowed: jpg, png, pdf, doc, docx.', 'error');
+                selectedFile = null;
+                event.target.value = ''; // Clear the file input visually
+                fileNameDisplay.textContent = '';
+                filePreview.style.display = 'none';
+                return;
+            }
+            // If valid, display file name and show preview area
+            fileNameDisplay.textContent = selectedFile.name;
+            filePreview.style.display = 'block';
+        } else {
+            // If no file selected (e.g., user cancelled), clear display
+            fileNameDisplay.textContent = '';
+            filePreview.style.display = 'none';
+        }
+    }
+
+    async function handleDocumentUpload(event) {
+      event.preventDefault(); // Prevent default form submission
+      const form = event.target;
+      const uploadButton = form.querySelector('button[type="submit"]');
+
+      // --- Pre-Upload Checks ---
+      if (!currentUser || typeof currentUser.id === 'undefined') { return showToast('You must be logged in to upload.', 'error'); }
+      if (!selectedFile) { return showToast('Please select a file to upload.', 'error'); }
+      // Re-validate file type before attempting upload
+      const allowedTypes = /(\.jpg|\.jpeg|\.png|\.pdf|\.doc|\.docx)$/i;
+      if (!allowedTypes.exec(selectedFile.name)) { return showToast('Cannot upload: Invalid file type selected.', 'error'); }
+      if (!form.querySelector('#confirmDetailsUpload').checked) { return showToast('Please confirm this is the correct file.', 'error'); }
+
+      // --- Prepare Data ---
+      const documentType = form.querySelector('#documentType').value;
+      const description = form.querySelector('#documentDescription').value;
+      // Create FormData object to send file and other data
+      const formData = new FormData();
+      formData.append('document', selectedFile); // The file itself
+      formData.append('id', currentUser.id);      // User's ID (key must be 'id')
+      formData.append('document_type', documentType);
+      formData.append('description', description);
+
       try {
-        const response = await fetch(`${API_URL}/documents/${currentUser.user_id}`);
-        const documents = await response.json();
-        
-        const container = document.getElementById('documentsContainer');
-        
-        if (documents.length === 0) {
-          container.innerHTML = '<p>No documents found.</p>';
-          return;
-        }
-        
-        let html = '<table><tr><th>Type</th><th>File Name</th><th>Description</th><th>Uploaded</th></tr>';
-        documents.forEach(doc => {
-          html += `<tr>
-            <td>${doc.document_type}</td>
-            <td>${doc.file_name}</td>
-            <td>${doc.description || 'N/A'}</td>
-            <td>${new Date(doc.uploaded_at).toLocaleDateString()}</td>
-          </tr>`;
-        });
-        html += '</table>';
-        container.innerHTML = html;
-      } catch (error) {
-        console.error('Error loading documents:', error);
-        showToast('Failed to load documents', 'error');
+        // --- Indicate Uploading State ---
+        uploadButton.disabled = true;
+        uploadButton.innerHTML = 'Uploading... <div class="loading"></div>'; // Show spinner
+
+        // --- Send Data via API ---
+        await apiCall('/documents/upload', 'POST', formData); // Use apiCall helper
+
+        // --- Handle Success ---
+        showToast('File uploaded successfully!', 'success');
+        form.reset(); // Clear form fields
+        document.getElementById('filePreview').style.display = 'none'; // Hide file preview
+        selectedFile = null; // Clear selected file state
+        navigateTo('records'); // Navigate to records page to see the new upload
+
+      } catch (error) { /* Error already shown by apiCall helper */
+      } finally {
+         // --- Reset Button State (always runs) ---
+        uploadButton.disabled = false;
+        uploadButton.innerHTML = 'Upload Document';
       }
     }
 
-    // Load Notifications
-    async function loadNotifications() {
-      if (!currentUser) return;
-      
-      try {
-        const response = await fetch(`${API_URL}/notifications/${currentUser.user_id}`);
-        const notifications = await response.json();
-        
-        const container = document.getElementById('notificationsContainer');
-        
-        if (notifications.length === 0) {
-          container.innerHTML = '<p>No notifications.</p>';
-          return;
-        }
-        
-        let html = '<div>';
-        notifications.forEach(notif => {
-          html += `<div style="padding: 15px; margin: 10px 0; border-left: 4px solid #1976D2; background: #f5f5f5; border-radius: 5px;">
-            <strong>${notif.type.toUpperCase()}</strong>
-            <p>${notif.message}</p>
-            <small>${new Date(notif.created_at).toLocaleString()}</small>
-          </div>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-      } catch (error) {
-        console.error('Error loading notifications:', error);
-        showToast('Failed to load notifications', 'error');
-      }
+    // --- Pagination Controls ---
+    function updatePaginationButtons() {
+        const prevButton = document.getElementById('prevDocumentsButton');
+        const nextButton = document.getElementById('nextDocumentsButton');
+        // Calculate total pages based on total documents found and items per page
+        const totalPages = Math.ceil( (totalDocuments || 0) / documentsPerPage);
+
+        // Safety check if buttons somehow don't exist
+        if (!prevButton || !nextButton) { console.warn("Pagination buttons missing"); return; }
+
+        // Disable 'Previous' if on the first page
+        prevButton.disabled = currentDocumentsPage <= 1;
+        // Disable 'Next' if on the last page or if there are no pages
+        nextButton.disabled = currentDocumentsPage >= totalPages || totalPages === 0;
     }
 
-    // Check for existing session on page load
+    function previousDocumentsPage() {
+        // Only proceed if the button isn't disabled
+        if (!document.getElementById('prevDocumentsButton').disabled) {
+            currentDocumentsPage--; // Decrement page number
+            loadTaxRecords(); // Reload data for the new page
+        }
+    }
+
+    function nextDocumentsPage() {
+        // Only proceed if the button isn't disabled
+        if (!document.getElementById('nextDocumentsButton').disabled) {
+            // Recalculate total pages just in case (should be consistent)
+            const totalPages = Math.ceil( (totalDocuments || 0) / documentsPerPage);
+            if (currentDocumentsPage < totalPages) { // Ensure not already on last page
+                currentDocumentsPage++; // Increment page number
+                loadTaxRecords(); // Reload data for the new page
+            }
+        }
+    }
+
+    // --- Search Functionality ---
+    // Debounce helper to limit how often search API is called while typing
+    function debounce(func, delay) {
+        clearTimeout(searchDebounceTimeout); // Clear existing timer
+        // Set new timer to execute function after delay
+        searchDebounceTimeout = setTimeout(func, delay);
+    }
+
+    // Function called on every key input in the search box
+    function handleSearchInput() {
+        const searchInput = document.getElementById('recordsSearch');
+        currentSearchTerm = searchInput.value; // Update state variable
+
+        // Use debounce: Wait 500ms after user stops typing before searching
+        debounce(() => {
+            console.log("Debounced Search Triggered for:", currentSearchTerm);
+            currentDocumentsPage = 1; // Always reset to page 1 for a new search
+            loadTaxRecords(); // Reload records/documents with the current search term
+        }, 500);
+    }
+
+    // Sets up the event listener for the search input field
+    function setupSearchListener() {
+        const searchInput = document.getElementById('recordsSearch');
+        if (searchInput) {
+            // Listen for the 'input' event (fires on typing, pasting, etc.)
+            searchInput.addEventListener('input', handleSearchInput);
+            console.log("Search input listener attached successfully.");
+        } else {
+            console.error("Search input element (#recordsSearch) not found!");
+        }
+    }
+
+
+    // --- Initial Page Load Logic ---
     window.addEventListener('DOMContentLoaded', () => {
+      console.log("DOM Loaded. Initializing app...");
+      // Check if user data exists in localStorage
       const savedUser = localStorage.getItem('currentUser');
       if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        navigateTo('dashboard');
+        try {
+            // Try parsing saved data
+            currentUser = JSON.parse(savedUser);
+            // Validate parsed data (must have an ID)
+            if (!currentUser || typeof currentUser.id === 'undefined') {
+                throw new Error("Invalid saved user data structure."); // Trigger catch block
+            }
+            console.log("Valid saved user found:", currentUser);
+            navigateTo('dashboard'); // Go directly to dashboard if valid user found
+        } catch (e) {
+            // If parsing fails or data is invalid, clear storage and treat as logged out
+            console.warn("Clearing invalid/corrupted saved user data:", e);
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            navigateTo('welcome'); // Go to welcome page
+        }
+      } else {
+          // If no saved data, ensure user is null and show welcome page
+          console.log("No saved user session found.");
+          currentUser = null;
+          navigateTo('welcome');
       }
+      // Set up the search input listener after DOM is ready
+      setupSearchListener();
     });
+
   </script>
 </body>
 </html>
+
+sort by

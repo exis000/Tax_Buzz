@@ -2,10 +2,10 @@
   "name": "taxbuzz",
   "version": "1.0.0",
   "description": "TaxBUZZ Backend API Server",
-  "main": "TaxBuzz Backend - server.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon TaxBuzz Backend - server.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",

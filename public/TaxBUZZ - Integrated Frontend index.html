@@ -271,8 +271,8 @@
   <!-- ===== REGISTER PAGE ====== -->
   <!-- ========================== -->
   <div id="register" class="page" style="background: linear-gradient(to bottom, #1E88E5, #fff); flex-direction: column; justify-content: space-between;">
-      <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-around; align-items: center; padding: 50px;"> {/* Changed justify */}
-          <div style="max-width: 45%; display: flex; flex-direction: column; justify-content: center;"> {/* Adjusted width */}
+      <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-around; align-items: center; padding: 50px;"> 
+          <div style="max-width: 45%; display: flex; flex-direction: column; justify-content: center;">
               <h3 style="margin: 0; font-weight: 600;">Welcome to</h3>
               <h1 style="font-size: 4rem; margin: 10px 0; font-weight: 900;">TaxBUZZ</h1>
               <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700;">Keep track on your Tax</h3>
@@ -657,7 +657,7 @@
             let html = '<h2>Tax Records</h2>'; // Section title
             if (!Array.isArray(records) || records.length === 0) {
                 // Display message indicating no results (considers if search was active)
-                html += `<p style="color: white; text-align: center;">${searchTerm ? 'No tax records found matching search.' : 'No tax records found.'}</p>`;
+              ;
             } else {
                 // Build HTML table for tax records
                 html += '<table><thead><tr><th>Year</th><th>Income</th><th>Deductions</th><th>Tax Paid</th><th>Status</th></tr></thead><tbody>';
@@ -908,3 +908,4 @@
   </script>
 </body>
 </html>
+No tax records

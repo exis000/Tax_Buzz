@@ -46,21 +46,29 @@ const upload = multer({
   }
 });
 
-// MySQL Database Connection
-const db = mysql.createConnection({
+// MySQL Database Connection Pool
+const pool = mysql.createPool({
   host: process.env.DB_HOST || 'sql12.freesqldatabase.com',
   user: process.env.DB_USER || 'sql12804372',
   password: process.env.DB_PASSWORD || 'WXrWB1MuDY',
-  database: process.env.DB_NAME || 'sql12804372'
+  database: process.env.DB_NAME || 'sql12804372',
+  waitForConnections: true, // Wait for available connection, don't err immediately
+  connectionLimit: 10,     // Max number of connections in pool
+  queueLimit: 0            // Unlimited query queue
 });
 
-// Connect to database
-db.connect((err) => {
-  if (err) {
-    console.error('❌ Error connecting to MySQL database:', err);
-    return;
-  }
-  console.log('✅ Connected to MySQL database!');
+// Get a connection from the pool for executing queries
+// We keep the variable name 'db' for simplicity to minimize changes below,
+// but it now refers to the pool object.
+const db = pool;
+
+// Optional: Test the pool connection on startup
+db.query('SELECT 1', (err, results) => {
+    if (err) {
+        console.error('❌ Error connecting to MySQL database pool:', err);
+    } else {
+        console.log('✅ Connected to MySQL database pool!');
+    }
 });
 
 // =====================
@@ -85,7 +93,7 @@ app.get('/api', (req, res) => {
 // USER ROUTES (SECURED WITH BCRYPT & CONSISTENT ID)
 // =====================
 
-// Register new user (SECURE VERSION)
+// Register new user 
 app.post('/api/users/register', async (req, res) => {
   const { email, password, username, full_name, phone } = req.body;
 
@@ -119,7 +127,7 @@ app.post('/api/users/register', async (req, res) => {
   }
 });
 
-// User login (SECURE VERSION & SENDS CORRECT ID)
+// User login 
 app.post('/api/users/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -142,7 +150,7 @@ app.post('/api/users/login', (req, res) => {
           return res.status(401).json({ error: 'Invalid email or password' });
         }
         const userResponse = {
-          id: user.id, // Correct ID sent
+          id: user.id, 
           username: user.username,
           email: user.email,
           full_name: user.full_name,
@@ -156,7 +164,7 @@ app.post('/api/users/login', (req, res) => {
   });
 });
 
-// Get user profile (USING CORRECT ID)
+// Get user profile 
 app.get('/api/users/:id', (req, res) => {
   const { id } = req.params;
   const query = 'SELECT id, username, email, full_name, phone, role, created_at FROM users WHERE id = ?';
@@ -173,7 +181,7 @@ app.get('/api/users/:id', (req, res) => {
   });
 });
 
-// Update user profile (USING CORRECT ID)
+// Update user profile 
 app.put('/api/users/:id', (req, res) => {
   const { id } = req.params;
   const { full_name, phone, email } = req.body;
@@ -232,7 +240,7 @@ app.get('/api/tax-records/:id', (req, res) => {
 });
 
 
-// Create new tax record (USING CORRECT ID FROM BODY)
+// Create new tax record 
 app.post('/api/tax-records', (req, res) => {
   const { id, tax_year, income, deductions, tax_paid, status } = req.body;
   if (!id || !tax_year || income === undefined || deductions === undefined || tax_paid === undefined) {
@@ -288,7 +296,7 @@ app.delete('/api/tax-records/:recordId', (req, res) => {
 // DOCUMENT ROUTES (WITH SEARCH & PAGINATION)
 // =====================
 
-// Upload document (EXPECTS CORRECT ID FROM BODY)
+// Upload document 
 app.post('/api/documents/upload', upload.single('document'), (req, res) => {
   const { id, document_type, description } = req.body;
   const originalFileName = req.file ? req.file.originalname : null; // Get original filename
@@ -462,10 +470,10 @@ app.listen(PORT, () => {
   console.log(`📊 API available at http://localhost:${PORT}/api`);
 });
 
-// Graceful shutdown
+
 process.on('SIGINT', () => {
   console.log('\n🛑 Shutting down server...');
-  db.end((err) => {
+  pool.end((err) => {
     if (err) {
       console.error('Error closing database connection:', err);
     } else {
